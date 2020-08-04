@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="dashboard"></div> 
+<div id="content" style="height: 690px;">
+   <div id="contentleft">
+        <div id='idDateFrom'></div>
+        <div id='idClients'></div>
+        <input style="width: 120px; height: 29px;" id="fetchButton" value="Fetch Data" type="button"/>
+   </div>
+   <div id="contentright">
+       <div style="float:left;border:none;" id='jqxTabs'>
+       <ul>
+            <li style="margin-left: 30px;">Data</li>
+            <li>Chart</li>
+       </ul>
+       <div>
+            <div style="overflow: hidden;"></div>
+            <div id="divDataGrid"></div>
+       </div>
+       <div>
+            <div style="overflow: hidden;"></div>
+            <!-- <div id="divChart"></div> -->
+            <div id='divChart' style="width: 600px; height: 400px;"> 
+       </div>
+       </div> <!-- jqxTabs --> 
+   </div>
+</div>
+{% endblock %}
+
+{% block scripted %}
+<script rel="javascript" type="text/javascript">
+    $(document).ready(function () {
+        $("#idDateFrom").jqxDateTimeInput({ 
+            width: '120px', 
+            height: '25px', 
+            formatString:'yyyy-MM-dd', 
+            theme: 'ui-smoothness'
+        });
+        $("#idClients").jqxDropDownList( {
+            selectedIndex: 0,
+            source:["X70974968"],
+            width: '120px',
+            height: '25px',
+            theme: 'ui-smoothness',
+        });
+        $('#fetchButton').jqxButton({ width: 120, theme: 'ui-smoothness' });
+        $('#fetchButton').click(function () {
+        });
+
+        $("#divDataGrid").jqxGrid({
+            width: 600,
+            //height: 300,
+            theme: 'ui-smoothness',
+            pagesizeoptions: ['500', '1000', '1500'],
+            pagesize: 50,
+            //pageable: true,
+            altrows: true,
+            sortable: true,
+            filterable: false,
+            rowsheight: 20,
+            columnsresize: false,
+            showaggregates: false,
+            showstatusbar: false,
+            statusbarheight: 30,
+            ready: function () {
+            },
+            columns: [
+                { text: 'For Date',   dataField: 'colAsofDate',   width: 75,  cellsalign: 'left',   cellsformat: 'yyyy-MM-dd'},
+                { text: 'Account',    dataField: 'colAccount',    width: 75,  cellsalign: 'left',   cellsformat: 's'},
+                { text: 'Category',   dataField: 'colCategory',   width: 75,  cellsalign: 'left',   cellsformat: 's'},
+                { text: 'Allocation', dataField: 'colAllocation', width: 75,  cellsalign: 'right',  cellsformat: 'p0'},
+                { text: 'Actual(ptc)',dataField: 'colActualPct',  width: 75,  cellsalign: 'right',  cellsformat: 'p0'},
+                { text: 'Actual',     dataField: 'colActual',     width: 75,  cellsalign: 'right',  cellsformat: 'c0'},
+                { text: 'Expected',   dataField: 'colExpected',   width: 75,  cellsalign: 'right',  cellsformat: 'c0'},
+                { text: 'Difference', dataField: 'colDifference', width: 75,  cellsalign: 'right',  cellsformat: 'c0'}
+            ]
+        });
+
+        var initGrid = function () {
+            var fromdt = $('#idDateFrom').jqxDateTimeInput('getText');
+            var url = "model?dt=" + fromdt + "&acc=" + "X70974968";
+            var source = {
+                datatype  : "json",
+                datafields: [
+                    { name: 'colAsofDate',    type: 'date', format: 'yyyy-MM-dd' },
+                    { name: 'colAccount',     type: 'string' },
+                    { name: 'colCategory',    type: 'string' },
+                    { name: 'colAllocation',  type: 'number' },
+                    { name: 'colActualPct',   type: 'number' },
+                    { name: 'colActual',      type: 'number' },
+                    { name: 'colExpected',    type: 'number' },
+                    { name: 'colDifference',  type: 'number' }
+                ],
+                id       : 'ident',
+                cache    : false,
+                type     : 'GET',
+                url      : url,
+                root     : 'data'
+            };
+            var dataAdapter = new $.jqx.dataAdapter(source);
+            $("#divDataGrid").jqxGrid({ source: dataAdapter });
+        }
+        var initGrid2 = function () { 
+            var source = 
+            {
+                datatype: "json",
+                url: "allocation",
+                type : 'GET',
+                root: 'data',
+                id: 'ident',
+                datafields: 
+                [
+                    { name: 'colCategory',      type: 'string'},
+                    { name: 'colAllocation',    type: 'number'}
+                ]
+            }
+            var dataAdapter = new $.jqx.dataAdapter(source,
+                {
+                    async: false, 
+                    autoBind: true,
+                    loadError: function (xhr, status, error) {
+                        alert(error);
+                    }
+                }
+            );
+            var settings = {
+                title: "Asset Allocation",
+                description: "Asset Allocation ratio",
+                enableAnimations: true,
+                showLegend: true,
+                showBorderLine: true,
+                // legendLayout : { flow: 'vertical' },
+                legendLayout : { left: 475, top: 125, width: 300, height: 200, flow: 'vertical' },
+                // legendPosition: { left: 520, top: 140, width: 100, height: 100, flow: 'vertical' },
+                padding: { left: 1, top: 1, right: 1, bottom: 1 },
+                titlePadding: { left: 0, top: 0, right: 0, bottom: 10 },
+                source: dataAdapter, 
+                seriesGroups: 
+                [
+                    {
+                        type: 'pie', 
+                        showLabels: true, 
+                        series: 
+                        [
+                            {
+                                dataField: 'colAllocation',
+                                displayText: 'colCategory',
+                                labelRadius: 100,
+                                initialAngle: 15,
+                                radius: 125,
+                                centerOffset: 0,
+                                formatSettings: { sufix: '%', decimalPlaces: 1 }
+                            }
+                        ]
+                    }
+                ]
+            }
+            $('#divChart').jqxChart(settings);
+        }
+        var initWidgets = function (tab) {
+            switch(tab) {
+            case 0:
+                initGrid();
+                break;
+            case 1:
+                initGrid2();
+                break;
+            }
+        }
+
+        $('#jqxTabs').jqxTabs({
+          width:    900,
+          height:   650,
+          position: 'top',
+          initTabContent: initWidgets,
+          theme:    'ui-smoothness'
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,89 @@
+with 
+ctetotnotional as (
+select
+   asofdate,
+   accname,
+   sum(currentvalue) accountnotional
+from
+   agni_etl_stage_ff1
+group by
+   asofdate,
+   accname
+),
+cteindividualnotional as (
+select
+   f.asofdate,
+   f.accname,
+   m.category,
+   f.symbol,
+   m.allocation * 100 allocation, 
+   f.currentvalue
+from 
+   agni_etl_stage_ff1 f  join agni_ref_category_symbol m on 
+      f.accname = m.account and
+      f.symbol = m.symbol
+),
+ctesleevenotional as (
+select
+   f.asofdate,
+   f.accname,
+   m.category,
+   round(sum(f.currentvalue), 0) sleevenotional
+from
+   agni_ref_category_symbol m join agni_etl_stage_ff1 f on
+      f.accname = m.account and
+      f.symbol = m.symbol
+group by
+   f.asofdate,
+   f.accname,
+   m.category
+),
+cteactual as (
+select
+   t.asofdate,
+   t.accname,
+   s.category,
+   t.symbol,
+   s.sleevenotional,
+   t.currentvalue actual
+from
+   cteindividualnotional t join ctesleevenotional s on
+      t.asofdate = s.asofdate and
+      t.accname = s.accname and 
+      t.category = s.category 
+),
+cteexpected as (
+select
+   n.asofdate,
+   m.account,
+   m.category,
+   n.symbol, 
+   n.allocation,
+   m.allocation sleeveallocation
+from
+   agni_portfolio_model m join cteindividualnotional n on
+      n.accname = m.account and 
+      n.category = m.category
+)
+select
+   a.asofdate,
+   a.accname,
+   e.category,
+   e.symbol, 
+   e.allocation ratio,
+   e.sleeveallocation * e.allocation * .01 model,
+   a.actual,
+   e.allocation * a.sleevenotional * .01 forecast, 
+   (e.allocation * a.sleevenotional * .01) - a.actual spread
+from
+   cteactual a join cteexpected e on
+      a.asofdate = e.asofdate and
+      a.accname = e.account and
+      a.symbol = e.symbol and 
+      a.category = e.category
+where
+   a.asofdate = :d and
+   a.accname = :acc and 
+   e.category = :cat
+   
+

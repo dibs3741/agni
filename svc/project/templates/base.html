@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Portfolio Management System</title>
+    <link rel="shortcut icon" href="#" />
+    <link href="{{ url_for('static', filename='jqwidgets/jqwidgets/styles/jqx.base.css') }}" rel="stylesheet" type="text/css">
+    <link href="{{ url_for('static', filename='jqwidgets/jqwidgets/styles/jqx.ui-smoothness.css') }}" rel="stylesheet" type="text/css">
+    <link href="{{ url_for('static', filename='css/jcpstyle.css') }}" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div id='wrapper'>
+    <div id='header'>
+    </div> <!-- header -->
+
+    <div id="navigation">
+        <div id='navBar' style='visibility: hidden; margin-left: 0px;'> </div>
+    </div> <!-- navigation -->
+
+    <!-- to be filled by child templates -->
+    {% block content %}
+    {% endblock %}
+
+    <div id="footer">
+    </div> <!-- footer -->
+</div> <!-- wrapper -->
+
+    <script src="{{ url_for('static', filename='jqwidgets/jqwidgets/globalization/globalize.js') }}"></script>
+    <script src="{{ url_for('static', filename='jqwidgets/scripts/jquery-1.11.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='jqwidgets/jqwidgets/jqxcore.js') }}"></script>
+    <script src="{{ url_for('static', filename='jqwidgets/jqwidgets/jqxmenu.js') }}"></script>
+    <script src="{{ url_for('static', filename='jqwidgets/jqwidgets/jqx-all.js') }}"></script>
+    <script src="{{ url_for('static', filename='jqwidgets/scripts/angular.min.js') }}"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var data = [
+            {
+                "id":"12",
+                "text":"Home", 
+                "parentid":"-1", 
+                "subMenuWidth":'250px'
+            },
+            {
+                "id":"13",
+                "text":"Portfolio", 
+                "parentid":"-1", 
+                "subMenuWidth":'250px'
+            },
+            {
+                "id":"131",
+                "parentid":"13", 
+                "text":"Model", 
+            },
+            {
+                "id":"132",
+                "parentid":"13", 
+                "text":"Position", 
+            },
+            {
+                "id":"133",
+                "parentid":"13", 
+                "text":"Allocation", 
+            }]
+            var source = 
+            {
+                datatype: "json",
+                datafields: [
+                    {name: 'id'},
+                    {name: 'parentid'},
+                    {name: 'text'},
+                    {name: 'subMenuWidth'}
+                ], 
+                id:'id',
+                localdata:data
+            };
+            var dataAdapter = new $.jqx.dataAdapter(source);
+            dataAdapter.dataBind();
+            var records = dataAdapter.getRecordsHierarchy(
+                'id',
+                'parentid',
+                'items',
+                [{
+                    name: 'text',
+                    map: 'label'
+                }]
+            );
+            $("#navBar").jqxMenu({
+                source: records,
+                height: 30,
+                width: 750,
+                theme: "ui-smoothness"
+            });
+            $("#navBar").css('visibility', 'visible');
+            $("#navBar").on('itemclick', function (event) {
+                var id = event.args.id;
+                var msg = $(event.args).text()
+                window.location.href = "/navigate?" + 'id=' + id + '&msg=' + msg;
+            });
+        });
+    </script>
+    <!-- to be filled by child templates -->
+    {% block scripted %}
+    {% endblock %}
+</body>
+</html>
+

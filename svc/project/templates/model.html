@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="dashboard"></div> 
+<div id="content" style="height: 690px;">
+   <div id="contentleft">
+        <div id='idDateFrom'></div>
+        <div id='idClients'></div>
+        <input style="width: 120px; height: 29px;" id="fetchButton" value="Fetch Data" type="button"/>
+   </div>
+   <div id="contentright">
+       <div style="float:left;border:none;" id='jqxTabs'>
+       <ul>
+            <li style="margin-left: 30px;">Overall</li>
+            <li>Large</li>
+            <li>Mid</li>
+            <li>Small</li>
+            <li>Europe</li>
+            <li>Emerging</li>
+            <li>Commodity</li>
+            <li>Real-Estate</li>
+            <li>Bond</li>
+       </ul>
+       <div> <div id="idInvestmentModel" style="float:left;"></div> </div>
+       <div> <div id="idInvestmentLargeCap" style="float:left;"></div> </div>
+       <div> <div id="idInvestmentMidCap" style="float:left;"></div> </div>
+       <div> <div id="idInvestmentSmallCap" style="float:left;"></div> </div>
+       <div> <div id="idInvestmentEurope" style="float:left;"></div> </div>
+       <div> <div id="idInvestmentEmerging" style="float:left;"></div> </div>
+       <div> <div id="idInvestmentCommodity" style="float:left;"></div> </div>
+       <div> <div id="idInvestmentRealEstate" style="float:left;"></div> </div>
+       <div> <div id="idInvestmentBond" style="float:left;"></div> </div>
+       </div> <!-- jqxTabs --> 
+   </div> <!-- contentright --> 
+</div> <!-- content --> 
+{% endblock %}
+
+{% block scripted %}
+<script rel="javascript" type="text/javascript">
+    $(document).ready(function () {
+        $("#idDateFrom").jqxDateTimeInput({ 
+            width: '120px', 
+            height: '25px', 
+            formatString:'yyyy-MM-dd', 
+            theme: 'ui-smoothness'
+        });
+        $("#idClients").jqxDropDownList( {
+            selectedIndex: 0,
+            source:["X70974968"],
+            width: '120px',
+            height: '25px',
+            theme: 'ui-smoothness',
+        });
+        $('#fetchButton').jqxButton({ width: 120, theme: 'ui-smoothness' });
+        $('#fetchButton').click(function () {
+            var fromdt = $('#idDateFrom').jqxDateTimeInput('getText');
+            var url = "model?dt=" + fromdt + "&acc=" + "X70974968";
+            var source = {
+                datatype  : "json",
+                datafields: [
+                    { name: 'colAsofDate',    type: 'date', format: 'yyyy-MM-dd' },
+                    { name: 'colAccount',     type: 'string' },
+                    { name: 'colCategory',    type: 'string' },
+                    { name: 'colAllocation',  type: 'number' },
+                    { name: 'colActualPct',   type: 'number' },
+                    { name: 'colActual',      type: 'number' },
+                    { name: 'colExpected',    type: 'number' },
+                    { name: 'colDifference',  type: 'number' }
+                ],
+                id       : 'ident',
+                cache    : false,
+                type     : 'GET',
+                url      : url,
+                root     : 'data'
+            };
+            var dataAdapter = new $.jqx.dataAdapter(source);
+            $("#idInvestmentModel").jqxGrid({ source: dataAdapter });
+        });
+
+        $('#jqxTabs').on('selected', function (event){ 
+            var vRestUrl;
+            var vDivId;
+            var vSleeve; 
+            var selectedTab = event.args.item;
+            switch(selectedTab) {
+            case 0:
+                vRestUrl = "model";
+                vDivId = "idInvestmentModel";
+                break;
+            case 1:
+                vRestUrl = "model/sleeve";
+                vSleeve = "large";
+                vDivId = "idInvestmentLargeCap";
+                break;
+            case 2:
+                vRestUrl = "model/sleeve";
+                vSleeve = "mid";
+                vDivId = "idInvestmentMidCap";
+                break;
+            case 3:
+                vRestUrl = "model/sleeve";
+                vSleeve = "small";
+                vDivId = "idInvestmentSmallCap";
+                break;
+            case 4:
+                vRestUrl = "model/sleeve";
+                vSleeve = "europe";
+                vDivId = "idInvestmentEurope";
+                break;
+            case 5:
+                vRestUrl = "model/sleeve";
+                vSleeve = "emerging";
+                vDivId = "idInvestmentEmerging";
+                break;
+            case 6:
+                vRestUrl = "model/sleeve";
+                vSleeve = "commodity";
+                vDivId = "idInvestmentCommodity";
+                break;
+            case 7:
+                vRestUrl = "model/sleeve";
+                vSleeve = "reit";
+                vDivId = "idInvestmentRealEstate";
+                break;
+            case 8:
+                vRestUrl = "model/sleeve";
+                vSleeve = "bond";
+                vDivId = "idInvestmentBond";
+                break;
+            }
+            var fromdt = $('#idDateFrom').jqxDateTimeInput('getText');
+            var url = vRestUrl + "?" + "dt=" + fromdt + "&acc=" + "X70974968" + "&cat=" + vSleeve;
+            var source = {
+                datatype  : "json",
+                datafields: [
+                    { name: 'colAsofDate',    type: 'date', format: 'yyyy-MM-dd' },
+                    { name: 'colAccount',     type: 'string' },
+                    { name: 'colCategory',    type: 'string' },
+                    { name: 'colSymbol',      type: 'string' },
+                    { name: 'colAllocation',  type: 'number' },
+                    { name: 'colActualPct',   type: 'number' },
+                    { name: 'colActual',      type: 'number' },
+                    { name: 'colExpected',    type: 'number' },
+                    { name: 'colDifference',  type: 'number' }
+                ],
+                id       : 'ident',
+                cache    : false,
+                type     : 'GET',
+                url      : url,
+                root     : 'data'
+            };
+            var dataAdapter = new $.jqx.dataAdapter(source);
+            $("#" + vDivId).jqxGrid({ source: dataAdapter });
+        });
+
+        var columns = [
+            { text: 'For Date',   dataField: 'colAsofDate',   width: 75,   cellsalign: 'left',   cellsformat: 'yyyy-MM-dd'},
+            { text: 'Account',    dataField: 'colAccount',    width: 75,   cellsalign: 'left',   cellsformat: 's'},
+            { text: 'Category',   dataField: 'colCategory',   width: 75,   cellsalign: 'left',   cellsformat: 's'},
+            { text: 'Symbol',     dataField: 'colSymbol',     width: 75,   cellsalign: 'left',   cellsformat: 's'},
+            { text: 'Allocation', dataField: 'colAllocation', width: 100,  cellsalign: 'right',  cellsformat: 'p0', aggregates: ['sum']},
+            { text: 'Model',      dataField: 'colActualPct',  width: 100,  cellsalign: 'right',  cellsformat: 'c0', aggregates: ['sum']},
+            { text: 'Actual',     dataField: 'colActual',     width: 100,  cellsalign: 'right',  cellsformat: 'c0', aggregates: ['sum']},
+            { text: 'Expected',   dataField: 'colExpected',   width: 100,  cellsalign: 'right',  cellsformat: 'c0', aggregates: ['sum']},
+            { text: 'Difference', dataField: 'colDifference', width: 100,  cellsalign: 'right',  cellsformat: 'c0', aggregates: ['sum']}
+        ]
+        $("#idInvestmentModel").jqxGrid({
+            width: 800,
+            theme: 'ui-smoothness',
+            pagesizeoptions: ['500', '1000', '1500'],
+            pagesize: 50,
+            altrows: true,
+            sortable: true,
+            filterable: true,
+            rowsheight: 20,
+            columnsresize: true,
+            showaggregates: true,
+            showstatusbar: true,
+            statusbarheight: 30,
+            ready: function () { },
+            columns: columns
+        });
+        $("#idInvestmentLargeCap").jqxGrid({
+            width: 800,
+            theme: 'ui-smoothness',
+            pagesizeoptions: ['500', '1000', '1500'],
+            pagesize: 50,
+            altrows: true,
+            sortable: true,
+            filterable: true,
+            rowsheight: 20,
+            columnsresize: true,
+            showaggregates: true,
+            showstatusbar: true,
+            statusbarheight: 30,
+            ready: function () { },
+            columns: columns
+        });
+        $("#idInvestmentMidCap").jqxGrid({
+            width: 800,
+            theme: 'ui-smoothness',
+            pagesizeoptions: ['500', '1000', '1500'],
+            pagesize: 50,
+            altrows: true,
+            sortable: true,
+            filterable: true,
+            rowsheight: 20,
+            columnsresize: true,
+            showaggregates: true,
+            showstatusbar: true,
+            statusbarheight: 30,
+            ready: function () { },
+            columns: columns
+        });
+        $("#idInvestmentSmallCap").jqxGrid({
+            width: 800,
+            theme: 'ui-smoothness',
+            pagesizeoptions: ['500', '1000', '1500'],
+            pagesize: 50,
+            altrows: true,
+            sortable: true,
+            filterable: true,
+            rowsheight: 20,
+            columnsresize: true,
+            showaggregates: true,
+            showstatusbar: true,
+            statusbarheight: 30,
+            ready: function () { },
+            columns: columns
+        });
+        $("#idInvestmentEurope").jqxGrid({
+            width: 800,
+            theme: 'ui-smoothness',
+            pagesizeoptions: ['500', '1000', '1500'],
+            pagesize: 50,
+            altrows: true,
+            sortable: true,
+            filterable: true,
+            rowsheight: 20,
+            columnsresize: true,
+            showaggregates: true,
+            showstatusbar: true,
+            statusbarheight: 30,
+            ready: function () { },
+            columns: columns
+        });
+        $("#idInvestmentEmerging").jqxGrid({
+            width: 800,
+            theme: 'ui-smoothness',
+            pagesizeoptions: ['500', '1000', '1500'],
+            pagesize: 50,
+            altrows: true,
+            sortable: true,
+            filterable: true,
+            rowsheight: 20,
+            columnsresize: true,
+            showaggregates: true,
+            showstatusbar: true,
+            statusbarheight: 30,
+            ready: function () { },
+            columns: columns
+        });
+        $("#idInvestmentCommodity").jqxGrid({
+            width: 800,
+            theme: 'ui-smoothness',
+            pagesizeoptions: ['500', '1000', '1500'],
+            pagesize: 50,
+            altrows: true,
+            sortable: true,
+            filterable: true,
+            rowsheight: 20,
+            columnsresize: true,
+            showaggregates: true,
+            showstatusbar: true,
+            statusbarheight: 30,
+            ready: function () { },
+            columns: columns
+        });
+        $("#idInvestmentRealEstate").jqxGrid({
+            width: 800,
+            theme: 'ui-smoothness',
+            pagesizeoptions: ['500', '1000', '1500'],
+            pagesize: 50,
+            altrows: true,
+            sortable: true,
+            filterable: true,
+            rowsheight: 20,
+            columnsresize: true,
+            showaggregates: true,
+            showstatusbar: true,
+            statusbarheight: 30,
+            ready: function () { },
+            columns: columns
+        });
+        $("#idInvestmentBond").jqxGrid({
+            width: 800,
+            theme: 'ui-smoothness',
+            pagesizeoptions: ['500', '1000', '1500'],
+            pagesize: 50,
+            altrows: true,
+            sortable: true,
+            filterable: true,
+            rowsheight: 20,
+            columnsresize: true,
+            showaggregates: true,
+            showstatusbar: true,
+            statusbarheight: 30,
+            ready: function () {
+            },
+            columns: columns
+        });
+
+        var initWidgets = function (tab) {
+            switch(tab) {
+            case 0:
+                //initGrid();
+                //initGrid2();
+                break;
+            case 1:
+                //initGrid2();
+                break;
+            }
+        }
+
+        $('#jqxTabs').jqxTabs({
+            width:    900,
+            height:   650,
+            position: 'top',
+            initTabContent: initWidgets,
+            theme:    'ui-smoothness'
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="dashboard"></div> 
+<div id="content" style="height: 690px;">
+   <div id="contentleft">
+        <div id='idDateFrom'></div>
+        <div id='idClients'></div>
+        <input style="width: 120px; height: 29px;" id="fetchButton" value="Fetch Data" type="button"/>
+   </div>
+   <div id="contentright">
+       <div id="idInvestmentModel" style="float:left;"></div>
+   </div>
+</div>
+{% endblock %}
+
+{% block scripted %}
+<script rel="javascript" type="text/javascript">
+    $(document).ready(function () {
+        $("#idDateFrom").jqxDateTimeInput({ 
+            width: '120px', 
+            height: '25px', 
+            formatString:'MM/dd/yyyy', 
+            theme: 'ui-smoothness'
+        });
+        $("#idClients").jqxDropDownList( {
+            selectedIndex: 0,
+            source:["X70974968"],
+            width: '120px',
+            height: '25px',
+            theme: 'ui-smoothness',
+        });
+        $('#fetchButton').jqxButton({ width: 120, theme: 'ui-smoothness' });
+        $('#fetchButton').click(function () {
+            var fromdt = $('#idDateFrom').jqxDateTimeInput('getText');
+            var url = "position?dt=" + fromdt + "&acc=" + "X70974968";
+            var source = {
+                datatype  : "json",
+                datafields: [
+                    { name: 'colAsofDate',       type: 'date', format: 'yyyy-MM-dd' },
+                    { name: 'colAccount',        type: 'string' },
+                    { name: 'colSymbol',         type: 'string' },
+                    { name: 'colCostBasis',      type: 'number' },
+                    { name: 'colCurrentValue',   type: 'number' }
+                ],
+                type     : 'GET',
+                url      : url,
+                root     : 'data'
+            };
+            var dataAdapter = new $.jqx.dataAdapter(source);
+            $("#idInvestmentModel").jqxGrid({ source: dataAdapter });
+        });
+
+        var fromdt = $('#idDateFrom').jqxDateTimeInput('getText');
+        var url = "position?dt=" + fromdt + "&acc=" + "X70974968";
+        var source = {
+            datatype  : "json",
+            datafields: [
+                { name: 'colAsofDate',       type: 'date', format: 'yyyy-MM-dd' },
+                { name: 'colAccount',        type: 'string' },
+                { name: 'colSymbol',         type: 'string' },
+                { name: 'colCostBasis',      type: 'number' },
+                { name: 'colCurrentValue',   type: 'number' }
+            ],
+            id       : 'ident',
+            cache    : false,
+            type     : 'GET',
+            url      : url,
+            root     : 'data'
+        };
+        var dataAdapter = new $.jqx.dataAdapter(source);
+
+        $("#idInvestmentModel").jqxGrid({
+            width: 450,
+            height: 600,
+            theme: 'ui-smoothness',
+            pagesizeoptions: ['500', '1000', '1500'],
+            pagesize: 50,
+            //pageable: true,
+            altrows: true,
+            sortable: true,
+            filterable: true,
+            rowsheight: 20,
+            columnsresize: true,
+            showaggregates: true,
+            showstatusbar: true,
+            statusbarheight: 30,
+            ready: function () {
+            },
+            columns: [
+                { text: 'For Date',   dataField: 'colAsofDate',   width: 75,  cellsalign: 'left',   cellsformat: 'yyyy-MM-dd'},
+                { text: 'Account',    dataField: 'colAccount',    width: 75,  cellsalign: 'left',   cellsformat: 's'},
+                { text: 'Symbol',     dataField: 'colSymbol',   width: 75,  cellsalign: 'left',   cellsformat: 's'},
+                { text: 'Cost Basis', dataField: 'colCostBasis', width: 100,  cellsalign: 'right',  cellsformat: 'c2', aggregates: ['sum']},
+                { text: 'Curr Value', dataField: 'colCurrentValue', width: 100,  cellsalign: 'right',  cellsformat: 'c2', aggregates: ['sum']}
+            ]
+        });
+    });
+</script>
+{% endblock %}

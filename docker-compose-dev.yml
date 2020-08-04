@@ -1,0 +1,54 @@
+version: '3.6'
+services:
+  svc:  
+    container_name: agni_svc_con
+    build:
+      context: ./svc
+      dockerfile: Dockerfile-dev
+    volumes:
+      - './svc:/usr/src/app:Z'
+    ports:
+      - 5050:5000
+    environment:
+      - FLASK_APP=project/__init__.py
+      - FLASK_ENV=development
+      - PYTHONUNBUFFERED=0
+      - APP_SETTINGS=project.config.DevelopmentConfig
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/agni_etl_dev
+    depends_on:
+      - db
+  app:  
+    container_name: agni_etl_con
+    build:
+      context: ./etl
+      dockerfile: Dockerfile
+    volumes:
+      - './etl/data:/app/data:Z'
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@db:5755/agni_etl_dev
+      - TEST=mytest
+    depends_on:
+      - db
+  db:  
+    container_name: agni_db_con
+    build:
+      context: ./db
+      dockerfile: Dockerfile
+    volumes:
+      - './db/data:/var/lib/postgresql/data:z'
+    ports:
+      - "5755:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+  nginx:  
+    container_name: agni_nginx_con
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile-dev
+    restart: always
+    ports:
+      - 80:80
+volumes:
+   postgres3:
+
